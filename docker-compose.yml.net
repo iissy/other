@@ -1,0 +1,42 @@
+version: '3'
+services:
+  mysql:
+    image: "mysql:latest"
+    ports:
+     - "3306:3306"
+    restart: always
+    container_name: mysql
+    environment:
+       MYSQL_ROOT_PASSWORD: hm3306
+    volumes:
+     - /docker/mysql/data:/var/lib/mysql
+     - /docker/mysql/conf:/etc/mysql/conf.d
+  asyons:
+    image: asyons:latest
+    build: ./asyons
+    ports:
+     - "5000:5000"
+    restart: always
+    container_name: asyons
+    volumes:
+     - /docker/asyons/wwwroot:/publish/wwwroot
+     - /docker/asyons/conf/appsettings.json:/publish/appsettings.json
+    command: dotnet asyons.com.dll
+  grpc:
+    image: grpc:latest
+    build: ./gRPC
+    ports:
+     - "50088:50088"
+    restart: always
+    container_name: grpc
+    command: dotnet MicroServer.dll
+  nginx:
+    image: nginx:latest
+    ports:
+     - "80:80"
+    restart: always
+    container_name: nginx
+    volumes:
+     - /docker/nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+    links:
+     - asyons:asyons
